@@ -44,8 +44,9 @@ class Node:
 
 class Tree:
 
-  def __init__(self, name, cuts):
+  def __init__(self, name, cuts, keep_negative_weights=True):
     self.name = name
+    self.keep_negative_weights = keep_negative_weights
     self.tree = {}
     self.variables = []
     for key, obj in cuts.items():
@@ -88,9 +89,16 @@ class Tree:
       print("Cut not found")
       return False
     node = self.tree[node]
-    # Add also a cut on weight != 0 in case cut and weight are mixed
-    node.rdf_node = node.rdf_node.Define("weight_", weight).Filter("weight_ > 0.")
     node.weight = weight
+    node.rdf_node = node.rdf_node.Define("weight_", weight)
+    # Check if negative weights are requested or needs to be discarded
+    if self.keep_negative_weights:
+      # Add also a cut on weight != 0 in case cut and weight are mixed
+      node.rdf_node = node.rdf_node.Filter("weight_ == 0.")
+    else:
+      node.rdf_node = node.rdf_node.Filter("weight_ > 0.")
+
+    
 
   def __getattr__(self, key):
     return self.tree.get(key, None)
@@ -115,7 +123,7 @@ class Tree:
 
 #######################################################################################################
 
-def build_dataframe(conf_dir, version_tag, sample, rdf_class, rdf_type):
+def build_dataframe(conf_dir, version_tag, sample, rdf_class, rdf_type, keep_negative_weights=True):
     
   # samples = json.load(open(conf_dir + "/samples.json"))
   # variables = {}
@@ -186,7 +194,7 @@ def build_dataframe(conf_dir, version_tag, sample, rdf_class, rdf_type):
 
   for idf, df in enumerate(dfs):
     # The cut tree is the base structure
-    tree = Tree(sample, conf_r.cuts)
+    tree = Tree(sample, conf_r.cuts, keep_negative_weights)
     tree['supercut'].rdf_node = df
 
     # Filter out aliases not for this samples

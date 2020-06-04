@@ -16,9 +16,11 @@ parser.add_argument("--cut", type=str, help="Cut to output")
 parser.add_argument("-o","--outputdir", type=str, help="Output dir")
 parser.add_argument("--vers", type=str, help="Version")
 parser.add_argument("-s","--samples", type=str, nargs="+", help="Samples to output")
+parser.add_argument("--discard-negative-weights",action="store_true", help="Remove negative weighted events", default=False)
 parser.add_argument("--debug", action="store_true", help="Debug output")
 args = parser.parse_args()
 
+keep_negative_weights = not args.discard_negative_weights
 
 R.ROOT.EnableImplicitMT() # only for ROOT rdf
 print(f"Running with {R.ROOT.GetImplicitMTPoolSize()} threads")
@@ -62,7 +64,7 @@ joblist = []
 for sample in samples:
     print(sample)
     try:
-        trees, nfiles = lrdf.build_dataframe(config_dir, version, sample, R, "root") # ROOT RDF "interactive"
+        trees, nfiles = lrdf.build_dataframe(config_dir, version, sample, R, "root", keep_negative_weights) # ROOT RDF "interactive"
     except Exception as e:
         print("Error!", e)
         exit(1)
