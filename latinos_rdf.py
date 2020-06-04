@@ -94,7 +94,7 @@ class Tree:
     # Check if negative weights are requested or needs to be discarded
     if self.keep_negative_weights:
       # Add also a cut on weight != 0 in case cut and weight are mixed
-      node.rdf_node = node.rdf_node.Filter("weight_ == 0.")
+      node.rdf_node = node.rdf_node.Filter("weight_ != 0.")
     else:
       node.rdf_node = node.rdf_node.Filter("weight_ > 0.")
 
